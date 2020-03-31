@@ -1,2 +1,2 @@
-username_siap = "siap_akademik"
-password_siap = "poltek"
+username_siap = "xxxx"
+password_siap = "xxxx"
