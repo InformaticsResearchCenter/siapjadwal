@@ -95,19 +95,23 @@ def getAbsensiPDFUjian(driver, filters, prodi):
                 try:
                     edit_select = tabel_select.find_element_by_xpath(
                         "//tr[" + str(index) + "]/td[14]/a")
-                    print(matkul_select)
+                    print(str(index))
                     time.sleep(1)
                     edit_select.send_keys(Keys.ENTER)
-                    time.sleep(1)
+                    time.sleep(2)
                     driver.switch_to.window(driver.window_handles[1])
-                    time.sleep(1)
+                    time.sleep(2)
                     urllib.request.urlretrieve(
                         'http://siap.poltekpos.ac.id/siap/modul/simpati/simpati.cetak.php?f=tmp/siap_akademik.jalak', 'absensi/'+prodi+'/'+filename+'.txt')
-                    driver.close()
+                    time.sleep(3)
                     makeAbsensiPDFUjian(filename, prodi)
+                    time.sleep(4)
                     if os.path.exists('absensi/'+prodi+'/'+filename+'.txt'):
                         os.remove('absensi/'+prodi+'/'+filename+'.txt')
+                    driver.close()
                     driver.switch_to.window(driver.window_handles[0])
+                    time.sleep(2)
+                    print(filename)
                 except NoSuchElementException:
                     continue
         except NoSuchElementException:
