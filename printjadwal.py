@@ -81,6 +81,7 @@ def getAbsensiPDFUjian(driver, filters, prodi):
             matkul_select = tabel_select.find_element_by_xpath(
                 "//tr[" + str(index) + "]/td[8]").text
             time.sleep(1)
+            matkul_select = matkul_select.replace(" ", "_")
             kelas_select = tabel_select.find_element_by_xpath(
                 "//tr[" + str(index) + "]/td[9]").text
             time.sleep(1)
@@ -88,7 +89,8 @@ def getAbsensiPDFUjian(driver, filters, prodi):
             kelas_select = convertKelas(kelas_select)
             nama_select = tabel_select.find_element_by_xpath(
                 "//tr[" + str(index) + "]/td[13]").text
-            time.sleep(1)
+            time.sleep(2)
+            print(str(index))
             email_select = getEmailDosen(nama_select)
             filename = ''
             if email_select != None:
@@ -97,7 +99,6 @@ def getAbsensiPDFUjian(driver, filters, prodi):
                 filename = "{}-{}-{}-{}-{}-NULL".format(filters['tahun'], setUjian(filters['jenis']), filters['program'], matkul_select, kelas_select)
 
             checkDir(prodi)
-
             if os.path.exists('absensi/'+prodi+'/'+filename+'.pdf'):
                 continue
             else:
@@ -110,11 +111,13 @@ def getAbsensiPDFUjian(driver, filters, prodi):
                     time.sleep(2)
                     driver.switch_to.window(driver.window_handles[1])
                     time.sleep(2)
+                    url_select = driver.find_element_by_link_text(
+                        "Cetak Laporan").get_attribute('href')
                     urllib.request.urlretrieve(
-                        'http://siap.poltekpos.ac.id/siap/modul/simpati/simpati.cetak.php?f=tmp/siap_akademik.jalak', 'absensi/'+prodi+'/'+filename+'.txt')
-                    time.sleep(3)
+                        url_select, 'absensi/'+prodi+'/'+filename+'.txt')
+                    time.sleep(2)
                     makeAbsensiPDFUjian(filename, prodi)
-                    time.sleep(4)
+                    time.sleep(2)
                     if os.path.exists('absensi/'+prodi+'/'+filename+'.txt'):
                         os.remove('absensi/'+prodi+'/'+filename+'.txt')
                     driver.close()
