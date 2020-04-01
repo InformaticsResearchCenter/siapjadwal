@@ -10,12 +10,14 @@ from fpdf import FPDF
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import Select
 import string
+from emaildosen import getEmailDosen
 
 
 def printJadwalUjian(driver, list_prodi_ujian, filters):
     launchJadwalMenuPrint(driver)
     printAbsensiUjian(driver, list_prodi_ujian, filters)
     driver.quit()
+
 
 def launchJadwalMenuPrint(driver):
     driver.get("http://siap.poltekpos.ac.id/")
@@ -84,11 +86,18 @@ def getAbsensiPDFUjian(driver, filters, prodi):
             time.sleep(1)
             kelas_select = int(kelas_select.strip("0"))
             kelas_select = convertKelas(kelas_select)
-            filename = "{}-{}-{}-{}-{}".format(
-                filters['tahun'], setUjian(filters['jenis']), filters['program'], matkul_select, kelas_select)
-            
+            nama_select = tabel_select.find_element_by_xpath(
+                "//tr[" + str(index) + "]/td[13]").text
+            time.sleep(1)
+            email_select = getEmailDosen(nama_select)
+            filename = ''
+            if email_select != None:
+                filename = "{}-{}-{}-{}-{}-{}".format(filters['tahun'], setUjian(filters['jenis']), filters['program'], matkul_select, kelas_select, email_select)
+            else:
+                filename = "{}-{}-{}-{}-{}-NULL".format(filters['tahun'], setUjian(filters['jenis']), filters['program'], matkul_select, kelas_select)
+
             checkDir(prodi)
-            
+
             if os.path.exists('absensi/'+prodi+'/'+filename+'.pdf'):
                 continue
             else:
@@ -116,8 +125,8 @@ def getAbsensiPDFUjian(driver, filters, prodi):
                     continue
         except NoSuchElementException:
             break
-        
-        
+
+
 def makeAbsensiPDFUjian(filename, prodi):
     all_chars = (chr(i) for i in range(sys.maxunicode))
     control_chars = ''.join(
@@ -147,6 +156,7 @@ def makeAbsensiPDFUjian(filename, prodi):
                 '', all_lines[i]), ln=1, border=0)
     pdf.output('absensi/'+prodi+'/'+filename+'.pdf')
 
+
 def convertKelas(kelas):
     list_kelas = list(string.ascii_lowercase)
     list_nomor = list(range(1, 27))
@@ -157,16 +167,17 @@ def convertKelas(kelas):
             break
     return "Kelas tidak terdaftar"
 
+
 def checkDir(prodi):
     if os.path.exists('absensi/'+prodi):
         return True
     else:
         os.makedirs('absensi/'+prodi)
         return True
-    
+
+
 def setUjian(ujian):
     if 1:
         return 'UTS'
     elif 2:
         return 'UAS'
-    
