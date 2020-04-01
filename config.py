@@ -1,2 +1,9 @@
 username_siap = "xxxx"
 password_siap = "xxxx"
+
+
+db_host_siap = 'xxxx'
+db_port_siap = 'xxxx'
+db_username_siap = 'xxxx'
+db_password_siap = 'xxxx'
+db_name_siap = 'xxxx'
