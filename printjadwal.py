@@ -90,42 +90,38 @@ def getAbsensiPDFUjian(driver, filters, prodi):
             nama_select = tabel_select.find_element_by_xpath(
                 "//tr[" + str(index) + "]/td[13]").text
             time.sleep(2)
-            print(str(index))
             email_select = getEmailDosen(nama_select)
             filename = ''
             if email_select != None:
                 filename = "{}-{}-{}-{}-{}-{}".format(filters['tahun'], setUjian(filters['jenis']), filters['program'], matkul_select, kelas_select, email_select)
             else:
                 filename = "{}-{}-{}-{}-{}-NULL".format(filters['tahun'], setUjian(filters['jenis']), filters['program'], matkul_select, kelas_select)
-
             checkDir(prodi)
             if os.path.exists('absensi/'+prodi+'/'+filename+'.pdf'):
+                os.remove('absensi/'+prodi+'/'+filename+'.pdf')
+            try:
+                edit_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[14]/a")
+                time.sleep(1)
+                edit_select.send_keys(Keys.ENTER)
+                time.sleep(2)
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(2)
+                url_select = driver.find_element_by_link_text(
+                    "Cetak Laporan").get_attribute('href')
+                urllib.request.urlretrieve(
+                    url_select, 'absensi/'+prodi+'/'+filename+'.txt')
+                time.sleep(2)
+                makeAbsensiPDFUjian(filename, prodi)
+                time.sleep(2)
+                if os.path.exists('absensi/'+prodi+'/'+filename+'.txt'):
+                    os.remove('absensi/'+prodi+'/'+filename+'.txt')
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                time.sleep(2)
+                print('File '+filename+'.pdf berhasil dibuat')
+            except NoSuchElementException:
                 continue
-            else:
-                try:
-                    edit_select = tabel_select.find_element_by_xpath(
-                        "//tr[" + str(index) + "]/td[14]/a")
-                    print(str(index))
-                    time.sleep(1)
-                    edit_select.send_keys(Keys.ENTER)
-                    time.sleep(2)
-                    driver.switch_to.window(driver.window_handles[1])
-                    time.sleep(2)
-                    url_select = driver.find_element_by_link_text(
-                        "Cetak Laporan").get_attribute('href')
-                    urllib.request.urlretrieve(
-                        url_select, 'absensi/'+prodi+'/'+filename+'.txt')
-                    time.sleep(2)
-                    makeAbsensiPDFUjian(filename, prodi)
-                    time.sleep(2)
-                    if os.path.exists('absensi/'+prodi+'/'+filename+'.txt'):
-                        os.remove('absensi/'+prodi+'/'+filename+'.txt')
-                    driver.close()
-                    driver.switch_to.window(driver.window_handles[0])
-                    time.sleep(2)
-                    print(filename)
-                except NoSuchElementException:
-                    continue
         except NoSuchElementException:
             break
 

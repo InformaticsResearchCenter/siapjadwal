@@ -3,10 +3,10 @@ from printjadwal import *
 from selenium.webdriver import ChromeOptions, Chrome
 from emaildosen import *
 
-# opts = ChromeOptions()
-# # opts.add_argument("--headless")
-# opts.add_experimental_option("detach", True)
-# driver = Chrome(options=opts)
+opts = ChromeOptions()
+opts.add_argument("--headless")
+opts.add_experimental_option("detach", True)
+driver = Chrome(options=opts)
 
 #data yang dibutuhkan
 filters = {'tahun': '20192',
@@ -14,9 +14,8 @@ filters = {'tahun': '20192',
            'program': 'REG'}
 list_prodi_ujian = ['D4 Teknik Informatika']
 
-
 # inputJadwalUjian(driver, filters, "jadwal_uts_coba.xls")
 
 # printJadwalUjian(driver, list_prodi_ujian, filters)
 
-sendFileUjian(list_prodi_ujian, filters)
+# sendFileUjian(list_prodi_ujian, filters)

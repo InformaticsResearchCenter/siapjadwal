@@ -28,8 +28,8 @@ def getEmailDosen(dosen):
         return rows[0]
 
 def sendEmail(file):
-    subject = "An email with attachment from Python"
-    body = "This is an email with attachment sent from Python"
+    subject = "Absensi "+file['ujian']+" Mata Kuliah "+file['matkul']+" Kelas "+file['kelas']
+    body = "Ini baru percobaan pengiriman file absensi oleh iteung ya... :)"
     
     sender_email = config.email_iteung
     receiver_email = file['tujuan']
@@ -83,9 +83,12 @@ def sendFileUjian(list_prodi_ujian, filters):
                     file = {'nama_lama': filename,
                             'prodi': prodi_selected,
                             'nama_baru': nama_baru[0]+'-'+nama_baru[1]+'-'+nama_baru[2]+'-'+nama_baru[3]+'-'+nama_baru[4]+'.pdf',
-                            'tujuan': email_dosen}
+                            'tujuan': email_dosen,
+                            'ujian': nama_baru[1],
+                            'matkul': nama_baru[3],
+                            'kelas': nama_baru[4]}
                     sendEmail(file)
-                    print(email_dosen)
+                    print('File '+filename+' berhasil dikirim ke'+email_dosen)
                     continue
             else:
                 continue
