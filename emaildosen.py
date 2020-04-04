@@ -4,28 +4,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import pymysql
 import config
-
+from dosensiap import *
 import email
 import smtplib
 import ssl
 import os 
-
-def dbConnectSiap():
-    db = pymysql.connect(config.db_host_siap, config.db_username_siap,
-                         config.db_password_siap, config.db_name_siap)
-    return db
-
-def getEmailDosen(dosen):
-    email = ''
-    db = dbConnectSiap()
-    sql = "select Email from simak_mst_dosen where Nama = '"+dosen+"'"
-    
-    with db:
-        cur = db.cursor()
-        cur.execute(sql)
-
-        rows = cur.fetchone()
-        return rows[0]
+import string
 
 def sendEmail(file):
     subject = "Absensi "+file['ujian']+" Mata Kuliah "+file['matkul']+" Kelas "+file['kelas']
@@ -68,7 +52,6 @@ def sendEmail(file):
         
     os.rename(file['nama_baru'], file['nama_lama'])
     os.chdir(r'../../')
-    
 
 def sendFileUjian(list_prodi_ujian, filters):
     for prodi_selected in list_prodi_ujian:
@@ -88,14 +71,53 @@ def sendFileUjian(list_prodi_ujian, filters):
                             'matkul': nama_baru[3],
                             'kelas': nama_baru[4]}
                     sendEmail(file)
-                    print('File '+filename+' berhasil dikirim ke'+email_dosen)
-                    continue
-            else:
-                continue
+                    print('File '+filename+' berhasil dikirim ke '+email_dosen)
     
 
+def sendFileUjianDosen(dosens, filters):
+    for dosen in dosens:
+        matkul = getMatkulDosen(dosen, filters['tahun'])
+        for prodi_selected in matkul['prodi'].unique():
+            directory = 'absensi/'+prodi_selected
+            for ind in matkul.index:
+                for filename in os.listdir(directory):
+                    if filename.endswith(".pdf") and filename.startswith(filters['tahun']+'-'+setUjian(filters['jenis'])+'-'+filters['program']):
+                        nama_baru = filename[:-4].split("-")
+                        email_dosen = nama_baru[5]
+                        matkul_select = matkul['nama_matkul'][ind].replace(" ", "_")
+                        matkul_select = matkul_select.replace("-", "_")
+                        
+                        if nama_baru[3] == matkul_select and nama_baru[4] == convertKelas(int(matkul['kelas'][ind].strip("0"))):
+                            
+                            if email_dosen == 'NULL':
+                                continue
+                            else:
+                                file = {'nama_lama': filename,
+                                        'prodi': prodi_selected,
+                                        'nama_baru': nama_baru[0]+'-'+nama_baru[1]+'-'+nama_baru[2]+'-'+nama_baru[3]+'-'+nama_baru[4]+'.pdf',
+                                        'tujuan': email_dosen,
+                                        'ujian': nama_baru[1],
+                                        'matkul': nama_baru[3],
+                                        'kelas': nama_baru[4]}
+                                # sendEmail(file)
+                                print('File '+filename+' berhasil dikirim ke '+email_dosen)
+
+
 def setUjian(ujian):
-    if 1:
+    ujian = int(ujian)
+    if ujian == 1:
         return 'UTS'
-    elif 2:
+    elif ujian == 2:
         return 'UAS'
+    else:
+        return 'XXX'
+
+def convertKelas(kelas):
+    list_kelas = list(string.ascii_lowercase)
+    list_nomor = list(range(1, 27))
+    dict_kelas = dict(zip(list_nomor, list_kelas))
+    for k, v in dict_kelas.items():
+        if k == kelas:
+            return v.upper()
+            break
+    return "Kelas tidak terdaftar"
