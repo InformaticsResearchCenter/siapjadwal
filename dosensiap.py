@@ -3,15 +3,16 @@ import config
 import pandas as pd
 
 def dbConnectSiap():
-    db = pymysql.connect(config.db_host_siap, config.db_username_siap,
-                         config.db_password_siap, config.db_name_siap)
+    db = pymysql.connect(config.db_host_siap, 
+                         config.db_username_siap,
+                         config.db_password_siap, 
+                         config.db_name_siap)
     return db
 
 def getEmailDosen(matkul, kelas, tahun):
     db = dbConnectSiap()
-    
     sql = """
-    select d.Email,j.JadwalID,j.TahunID,j.NamaKelas,CASE
+        select d.Email,j.JadwalID,j.TahunID,j.NamaKelas,CASE
         WHEN j.ProdiID ='.13.' THEN 'D3 Teknik Informatika'
         WHEN j.ProdiID ='.14.' THEN 'D4 Teknik Informatika'
         WHEN j.ProdiID ='.23.' THEN 'D3 Manajemen Informatika'
@@ -24,7 +25,8 @@ def getEmailDosen(matkul, kelas, tahun):
         END AS namaprodi,j.MKKode,j.DosenID,d.Nama,j.Nama,j.HariID,
         j.JamMulai,j.JamSelesai,j.DosenID 
         from simak_trn_jadwal as j join simak_mst_dosen as d
-        where  j.dosenid=d.login and j.MKKode = '"""+matkul+"""' and j.NamaKelas = '"""+kelas+"""' and TahunID = '"""+tahun+"""';
+        where  j.dosenid=d.login and j.MKKode = '"""+matkul+"""' 
+        and j.NamaKelas = '"""+kelas+"""' and TahunID = '"""+tahun+"""';
     """
     
     with db:
@@ -41,7 +43,7 @@ def getEmailDosen(matkul, kelas, tahun):
 def getMatkulDosen(dosen, tahun):
     db = dbConnectSiap()
     sql = """
-    select j.JadwalID,j.TahunID,j.NamaKelas,CASE
+        select j.JadwalID,j.TahunID,j.NamaKelas,CASE
         WHEN j.ProdiID ='.13.' THEN 'D3 Teknik Informatika'
         WHEN j.ProdiID ='.14.' THEN 'D4 Teknik Informatika'
         WHEN j.ProdiID ='.23.' THEN 'D3 Manajemen Informatika'
@@ -54,9 +56,9 @@ def getMatkulDosen(dosen, tahun):
         END AS namaprodi,j.MKKode,j.Nama,j.HariID,
         j.JamMulai,j.JamSelesai,j.DosenID 
         from simak_trn_jadwal as j join simak_mst_dosen as d
-        where  j.dosenid=d.login and j.DosenID = '"""+dosen+"""' and TahunID = '"""+tahun+"""';
+        where  j.dosenid=d.login and j.DosenID = '"""+dosen+"""' 
+        and TahunID = '"""+tahun+"""';
     """
-    
     with db:
         matkul = []
         

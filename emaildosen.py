@@ -12,7 +12,7 @@ import os
 import string
 
 def sendEmail(file):
-    subject = "Absensi "+file['ujian']+" Mata Kuliah "+file['matkul']+" Kelas "+file['kelas']
+    subject = "Absensi {} Mata Kuliah {} Kelas ".format(file['ujian'], file['matkul'], file['kelas'])
     body = "Ini baru percobaan pengiriman file absensi oleh iteung ya... :)"
     
     sender_email = config.email_iteung
@@ -27,7 +27,7 @@ def sendEmail(file):
 
     message.attach(MIMEText(body, "plain"))
 
-    os.chdir(r'absensi/'+file['prodi'])
+    os.chdir(r'absensi/{}'.format(file['prodi']))
     os.rename(file['nama_lama'], file['nama_baru'])
     filename = file['nama_baru']
 
@@ -99,7 +99,7 @@ def sendFileUjianDosen(dosens, filters):
                                         'ujian': nama_baru[1],
                                         'matkul': nama_baru[3],
                                         'kelas': nama_baru[4]}
-                                # sendEmail(file)
+                                sendEmail(file)
                                 print('File '+filename+' berhasil dikirim ke '+email_dosen)
 
 
