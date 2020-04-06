@@ -29,46 +29,46 @@ def getFile(driver, list_prodi_ujian, filters):
 
 
 def printAbsensiUjian(driver, filters, prodi):
-    time.sleep(3)
+    time.sleep(2)
     tabel_select = driver.find_element_by_xpath(
         "//table[@cellpadding='4' and @cellspacing='1']/tbody")
-    time.sleep(3)
+    time.sleep(2)
     index = 1
     while True:
         try:
             index += 1
-            matkul_select = tabel_select.find_element_by_xpath(
-                "//tr[" + str(index) + "]/td[8]").text
-            time.sleep(1)
-            matkul_select = matkul_select.replace(" ", "_")
-            matkul_select = matkul_select.replace("-", "_")
-            matkul_select = matkul_select.replace("(", "")
-            matkul_select = matkul_select.replace(")", "")
-            kelas_select = tabel_select.find_element_by_xpath(
-                "//tr[" + str(index) + "]/td[9]").text
-            time.sleep(1)
-            kode_matkul_select = tabel_select.find_element_by_xpath(
-                "//tr[" + str(index) + "]/td[7]").text
-            time.sleep(2)
-            email_select = getEmailDosen(
-                kode_matkul_select, kelas_select, filters['tahun'])
-            kelas_select = int(kelas_select.strip("0"))
-            kelas_select = convertKelas(kelas_select)
-            filename = ''
-            if email_select != None:
-                filename = "{}-{}-{}-{}-{}-{}".format(filters['tahun'], setUjian(
-                    filters['jenis']), filters['program'], matkul_select, kelas_select, email_select)
-            else:
-                filename = "{}-{}-{}-{}-{}-NULL".format(filters['tahun'], setUjian(
-                    filters['jenis']), filters['program'], matkul_select, kelas_select)
-            checkDir(prodi)
-            if os.path.exists('absensi/'+prodi+'/'+filename+'.pdf'):
-                os.remove('absensi/'+prodi+'/'+filename+'.pdf')
             try:
-                edit_select = tabel_select.find_element_by_xpath(
+                dhu_select = tabel_select.find_element_by_xpath(
                     "//tr[" + str(index) + "]/td[16]/a")
+                time.sleep(2)
+                matkul_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[8]").text
                 time.sleep(1)
-                edit_select.send_keys(Keys.ENTER)
+                matkul_select = matkul_select.replace(" ", "_")
+                matkul_select = matkul_select.replace("-", "_")
+                matkul_select = matkul_select.replace("(", "")
+                matkul_select = matkul_select.replace(")", "")
+                kelas_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[9]").text
+                time.sleep(1)
+                kode_matkul_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[7]").text
+                email_select = getEmailDosen(
+                    kode_matkul_select, kelas_select, filters['tahun'])
+                kelas_select = int(kelas_select.strip("0"))
+                kelas_select = convertKelas(kelas_select)
+                filename = ''
+                if email_select != None:
+                    filename = "{}-{}-{}-{}-{}-{}".format(filters['tahun'], setUjian(
+                        filters['jenis']), filters['program'], matkul_select, kelas_select, email_select)
+                else:
+                    filename = "{}-{}-{}-{}-{}-NULL".format(filters['tahun'], setUjian(
+                        filters['jenis']), filters['program'], matkul_select, kelas_select)
+                checkDir(prodi)
+                if os.path.exists('absensi/'+prodi+'/'+filename+'.pdf'):
+                    os.remove('absensi/'+prodi+'/'+filename+'.pdf')
+            
+                dhu_select.send_keys(Keys.ENTER)
                 time.sleep(2)
                 driver.switch_to.window(driver.window_handles[1])
                 time.sleep(2)
@@ -78,7 +78,6 @@ def printAbsensiUjian(driver, filters, prodi):
                     url_select, 'absensi/'+prodi+'/'+filename+'.txt')
                 time.sleep(2)
                 makePDFOfAbsensiUjian(filename, prodi)
-                time.sleep(2)
                 if os.path.exists('absensi/'+prodi+'/'+filename+'.txt'):
                     os.remove('absensi/'+prodi+'/'+filename+'.txt')
                 driver.close()
@@ -103,11 +102,13 @@ def makeFileForDosen(driver, dosens, filters):
         
     prodis = list(set(prodis))
     nama_dosens = list(set(nama_dosens))
-
     all_ujian = getAllUjian(driver, prodis, nama_dosens, filters)
+    print(all_ujian)
     print("\nSelesai mengambil semua ujian")
     for dosen in dosens:
         matkul = getMatkulDosen(dosen, filters['tahun'])
+        matkul.sort_values(by=['prodi'], inplace=True)
+        print(matkul)
         getFileForDosen(driver, all_ujian, matkul, filters)
     driver.quit()
 
@@ -126,7 +127,12 @@ def getFileForDosen(driver, all_ujian, matkul, filters):
         else:
             index_ujian = ujian.iloc[0]['index']
             prodi_ujian = ujian.iloc[0]['prodi']
-            matkul = {"prodi": prodi_ujian,"index": str(index_ujian)}
+            matkul = {
+                "prodi": prodi_ujian,
+                "index": str(index_ujian),
+                "kelas": ujian.iloc[0]['kelas'],
+                     "matkul": ujian.iloc[0]['matkul']
+                }
             printAbsensiUjianForDosen(driver, matkul, filters)
 
 def printAbsensiUjianForDosen(driver, matkul, filters):
@@ -146,44 +152,45 @@ def printAbsensiUjianForDosen(driver, matkul, filters):
     tabel_select = driver.find_element_by_xpath(
         "//table[@cellpadding='4' and @cellspacing='1']/tbody")
     time.sleep(2)
-    
-    matkul_select = tabel_select.find_element_by_xpath(
-        "//tr[" + matkul['index'] + "]/td[8]").text
-    time.sleep(1)
-    kelas_select = tabel_select.find_element_by_xpath(
-        "//tr[" + matkul['index'] + "]/td[9]").text
-    time.sleep(1)
-    kode_matkul_select = tabel_select.find_element_by_xpath(
-        "//tr[" + matkul['index'] + "]/td[7]").text
-    time.sleep(2)
-    
-    email_select = getEmailDosen(
-    kode_matkul_select, kelas_select, filters['tahun'])
-    kelas_select = int(kelas_select.strip("0"))
-    kelas_select = convertKelas(kelas_select)
-    matkul_select = matkul_select.replace(" ", "_")
-    matkul_select = matkul_select.replace("-", "_")
-    matkul_select = matkul_select.replace("(", "")
-    matkul_select = matkul_select.replace(")", "")
-    filename = ''
-    # Test with your email
-    # email_select = 'divakrishnam@yahoo.com'
-    if email_select != None:
-        filename = "{}-{}-{}-{}-{}-{}".format(filters['tahun'], setUjian(
-            filters['jenis']), filters['program'], matkul_select, kelas_select, email_select)
-    else:
-        filename = "{}-{}-{}-{}-{}-NULL".format(filters['tahun'], setUjian(
-            filters['jenis']), filters['program'], matkul_select, kelas_select)
-    
-    checkDir(matkul['prodi'])
-    
-    if os.path.exists('absensi/'+prodi+'/'+filename+'.pdf'):
-        os.remove('absensi/'+prodi+'/'+filename+'.pdf')
     try:
-        edit_select = tabel_select.find_element_by_xpath(
+        dhu_select = tabel_select.find_element_by_xpath(
             "//tr[" + matkul['index'] + "]/td[16]/a")
+        print('Jadwal {} kelas {} diproses'.format(
+            matkul['matkul'], matkul['kelas']))
+        time.sleep(2)
+        matkul_select = tabel_select.find_element_by_xpath(
+                "//tr[" + matkul['index'] + "]/td[8]").text
         time.sleep(1)
-        edit_select.send_keys(Keys.ENTER)
+        kelas_select = tabel_select.find_element_by_xpath(
+            "//tr[" + matkul['index'] + "]/td[9]").text
+        time.sleep(1)
+        kode_matkul_select = tabel_select.find_element_by_xpath(
+            "//tr[" + matkul['index'] + "]/td[7]").text
+        
+        email_select = getEmailDosen(
+        kode_matkul_select, kelas_select, filters['tahun'])
+        kelas_select = int(kelas_select.strip("0"))
+        kelas_select = convertKelas(kelas_select)
+        matkul_select = matkul_select.replace(" ", "_")
+        matkul_select = matkul_select.replace("-", "_")
+        matkul_select = matkul_select.replace("(", "")
+        matkul_select = matkul_select.replace(")", "")
+        filename = ''
+        # Test with your email
+        # email_select = 'divakrishnam@yahoo.com'
+        if email_select != None:
+            filename = "{}-{}-{}-{}-{}-{}".format(filters['tahun'], setUjian(
+                filters['jenis']), filters['program'], matkul_select, kelas_select, email_select)
+        else:
+            filename = "{}-{}-{}-{}-{}-NULL".format(filters['tahun'], setUjian(
+                filters['jenis']), filters['program'], matkul_select, kelas_select)
+        
+        checkDir(matkul['prodi'])
+        
+        if os.path.exists('absensi/'+prodi+'/'+filename+'.pdf'):
+            os.remove('absensi/'+prodi+'/'+filename+'.pdf')
+
+        dhu_select.send_keys(Keys.ENTER)
         time.sleep(2)
         driver.switch_to.window(driver.window_handles[1])
         time.sleep(2)
@@ -194,7 +201,6 @@ def printAbsensiUjianForDosen(driver, matkul, filters):
         time.sleep(2)
         
         makePDFOfAbsensiUjian(filename, prodi)
-        time.sleep(2)
         if os.path.exists('absensi/'+prodi+'/'+filename+'.txt'):
             os.remove('absensi/'+prodi+'/'+filename+'.txt')
         driver.close()
@@ -202,7 +208,8 @@ def printAbsensiUjianForDosen(driver, matkul, filters):
         time.sleep(2)
         print('File '+filename+'.pdf berhasil dibuat')
     except NoSuchElementException:
-        print('Jadwal {} kelas {} belum diatur'.format(matkul_select, kelas_select))
+        print('Jadwal {} kelas {} belum diatur'.format(
+            matkul['matkul'], matkul['kelas']))
             
 
 def launchJadwalUjianMenu(driver):

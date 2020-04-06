@@ -37,10 +37,9 @@ prodis = ['D4 Teknik Informatika',
 filters = {'tahun': '20192',
            'jenis': '1',
            'program': 'REG'}
-dosens = ['NN155L',
-          'NN222L']
-
+# dosens = ['NN155L','NN222L']
+dosens = ['NN257L']
 # Buat generate pdf
-# makeFileForDosen(driver, dosens, filters)
+makeFileForDosen(driver, dosens, filters)
 # Buat ngirim pdf ke email
-sendFileUjianDosen(dosens, filters)
+# sendFileUjianDosen(dosens, filters)
