@@ -19,10 +19,10 @@ driver = Chrome(options=opts)
 filters = {'tahun': '20192',
            'jenis': '1',
            'program': 'REG'}
-prodis = ['D4 Teknik Informatika', 
-                    'D4 Manajemen Perusahaan',
-                    'D3 Logistik Bisnis', 
-                    'D4 Logistik Bisnis']
+prodis = ['D4 Teknik Informatika',
+          'D4 Manajemen Perusahaan',
+          'D3 Logistik Bisnis', 
+          'D4 Logistik Bisnis']
 
 # inputJadwalUjian(driver, filters, "jadwal_uts_coba.xls")
 # Buat generate PDF
@@ -41,6 +41,6 @@ dosens = ['NN155L',
           'NN222L']
 
 # Buat generate pdf
-makeFileForDosen(driver, dosens, filters)
+# makeFileForDosen(driver, dosens, filters)
 # Buat ngirim pdf ke email
 sendFileUjianDosen(dosens, filters)

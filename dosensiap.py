@@ -53,7 +53,7 @@ def getMatkulDosen(dosen, tahun):
         WHEN j.ProdiID ='.44.' THEN 'D4 Manajemen Perusahaan'
         WHEN j.ProdiID ='.53.' THEN 'D3 Logistik Bisnis'
         WHEN j.ProdiID ='.54.' THEN 'D4 Logistik Bisnis'
-        END AS namaprodi,j.MKKode,j.Nama,j.HariID,
+        END AS namaprodi,j.MKKode,j.Nama,d.Nama,j.HariID,
         j.JamMulai,j.JamSelesai,j.DosenID 
         from simak_trn_jadwal as j join simak_mst_dosen as d
         where  j.dosenid=d.login and j.DosenID = '"""+dosen+"""' 
@@ -67,7 +67,7 @@ def getMatkulDosen(dosen, tahun):
         rows = cur.fetchall()
         
         for row in rows:
-            matkul.append([row[2], row[3], row[4], row[5]])
+            matkul.append([row[2], row[3], row[4], row[5], row[6]])
             
-    return pd.DataFrame(matkul, columns=['kelas', 'prodi', 'matkul', 'nama_matkul'])
+    return pd.DataFrame(matkul, columns=['kelas', 'prodi', 'matkul', 'nama_matkul', 'nama_dosen'])
 

@@ -12,8 +12,10 @@ import os
 import string
 
 def sendEmail(file):
-    subject = "Absensi {} Mata Kuliah {} Kelas ".format(file['ujian'], file['matkul'], file['kelas'])
-    body = "Ini baru percobaan pengiriman file absensi oleh iteung ya... :)"
+    subject = "Absensi {} Mata Kuliah {} Kelas {} Prodi {}".format(
+        file['ujian'], file['matkul'], file['kelas'], file['prodi'])
+    body = "Ini file absensi oleh iteung ya... :) \nAbsensi {} Mata Kuliah {} Kelas {} Prodi {}".format(
+        file['ujian'], file['matkul'], file['kelas'], file['prodi'])
     
     sender_email = config.email_iteung
     receiver_email = file['tujuan']
@@ -52,6 +54,7 @@ def sendEmail(file):
         
     os.rename(file['nama_baru'], file['nama_lama'])
     os.chdir(r'../../')
+    return True
 
 def sendFileUjian(list_prodi_ujian, filters):
     for prodi_selected in list_prodi_ujian:
@@ -69,7 +72,8 @@ def sendFileUjian(list_prodi_ujian, filters):
                             'tujuan': email_dosen,
                             'ujian': nama_baru[1],
                             'matkul': nama_baru[3],
-                            'kelas': nama_baru[4]}
+                            'kelas': nama_baru[4],
+                            'prodi': prodi_selected}
                     sendEmail(file)
                     print('File '+filename+' berhasil dikirim ke '+email_dosen)
     
@@ -86,6 +90,8 @@ def sendFileUjianDosen(dosens, filters):
                         email_dosen = nama_baru[5]
                         matkul_select = matkul['nama_matkul'][ind].replace(" ", "_")
                         matkul_select = matkul_select.replace("-", "_")
+                        matkul_select = matkul_select.replace("(", "")
+                        matkul_select = matkul_select.replace(")", "")
                         
                         if nama_baru[3] == matkul_select and nama_baru[4] == convertKelas(int(matkul['kelas'][ind].strip("0"))):
                             
@@ -98,10 +104,13 @@ def sendFileUjianDosen(dosens, filters):
                                         'tujuan': email_dosen,
                                         'ujian': nama_baru[1],
                                         'matkul': nama_baru[3],
-                                        'kelas': nama_baru[4]}
-                                sendEmail(file)
-                                print('File '+filename+' berhasil dikirim ke '+email_dosen)
-
+                                        'kelas': nama_baru[4],
+                                        'prodi': prodi_selected}
+                                if sendEmail(file):
+                                    print('File '+filename+' berhasil dikirim ke '+email_dosen)
+                                else:
+                                    print('File '+filename +
+                                          ' gagal dikirim ke '+email_dosen)
 
 def setUjian(ujian):
     ujian = int(ujian)

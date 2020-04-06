@@ -95,13 +95,16 @@ def printAbsensiUjian(driver, filters, prodi):
 def makeFileForDosen(driver, dosens, filters):
     launchJadwalUjianMenu(driver)
     prodis = []
+    nama_dosens = []
     for dosen in dosens:
         matkul = getMatkulDosen(dosen, filters['tahun'])
         prodis.extend(matkul['prodi'].tolist())
+        nama_dosens.extend(matkul['nama_dosen'].tolist())
         
     prodis = list(set(prodis))
+    nama_dosens = list(set(nama_dosens))
 
-    all_ujian = getAllUjian(driver, prodis, filters)
+    all_ujian = getAllUjian(driver, prodis, nama_dosens, filters)
     print("\nSelesai mengambil semua ujian")
     for dosen in dosens:
         matkul = getMatkulDosen(dosen, filters['tahun'])
@@ -160,8 +163,11 @@ def printAbsensiUjianForDosen(driver, matkul, filters):
     kelas_select = convertKelas(kelas_select)
     matkul_select = matkul_select.replace(" ", "_")
     matkul_select = matkul_select.replace("-", "_")
-
+    matkul_select = matkul_select.replace("(", "")
+    matkul_select = matkul_select.replace(")", "")
     filename = ''
+    # Test with your email
+    # email_select = 'divakrishnam@yahoo.com'
     if email_select != None:
         filename = "{}-{}-{}-{}-{}-{}".format(filters['tahun'], setUjian(
             filters['jenis']), filters['program'], matkul_select, kelas_select, email_select)
@@ -221,7 +227,7 @@ def chooseUjian(driver, filters):
         driver.find_element_by_xpath("//select[@name='prid']"))
     program_ujian.select_by_value(filters['program'])
 
-def getAllUjian(driver, prodis, filters):
+def getAllUjian(driver, prodis, dosens, filters):
     chooseUjian(driver, filters)
     list_ujian = pd.DataFrame()
     for prodi_selected in prodis:
@@ -230,13 +236,13 @@ def getAllUjian(driver, prodis, filters):
                 "//input[@name='Tampilkan']")
             tampil_ujian.send_keys(Keys.ENTER)
 
-            result_generate = genDataFrameUjian(driver, prodi_selected)
+            result_generate = genDataFrameUjian(driver, prodi_selected, dosens)
             list_ujian = pd.concat([result_generate, list_ujian])
 
     return list_ujian
 
 
-def genDataFrameUjian(driver, prodi_selected):
+def genDataFrameUjian(driver, prodi_selected, dosen):
     time.sleep(2)
     tabel_select = driver.find_element_by_xpath(
         "//table[@cellpadding='4' and @cellspacing='1']/tbody")
@@ -246,19 +252,23 @@ def genDataFrameUjian(driver, prodi_selected):
     while True:
         try:
             index += 1
-            matkul_select = tabel_select.find_element_by_xpath(
-                "//tr[" + str(index) + "]/td[8]").text
+            dosen_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[13]").text
             time.sleep(1)
-            kelas_select = tabel_select.find_element_by_xpath(
-                "//tr[" + str(index) + "]/td[9]").text
-            time.sleep(1)
-            kode_matkul_select = tabel_select.find_element_by_xpath(
-                "//tr[" + str(index) + "]/td[7]").text
-            time.sleep(2)
-            kelas_select = int(kelas_select.strip("0"))
-            data = {'prodi': prodi_selected, 'matkul': matkul_select,
-                    'kelas': kelas_select, 'kode_matkul': kode_matkul_select, 'index': index}
-            dict_data.append(data)
+            if dosen_select in dosen:
+                matkul_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[8]").text
+                time.sleep(1)
+                kelas_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[9]").text
+                time.sleep(1)
+                kode_matkul_select = tabel_select.find_element_by_xpath(
+                    "//tr[" + str(index) + "]/td[7]").text
+                time.sleep(2)
+                kelas_select = int(kelas_select.strip("0"))
+                data = {'prodi': prodi_selected, 'matkul': matkul_select,
+                        'kelas': kelas_select, 'kode_matkul': kode_matkul_select, 'index': index}
+                dict_data.append(data)
             print('.', end='', flush=True)
         except NoSuchElementException:
             break
